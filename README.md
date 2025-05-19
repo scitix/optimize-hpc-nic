@@ -72,7 +72,7 @@ Options:
 
 ```bash
 # Show currently optimized NICs (query mode)
-ops# optimize-hpc-nic s
+root@ops# optimize-hpc-nic s
 === Configured High-Speed NICs (≥200G) ===
 Interface       Speed(Mbps)  Driver          MAC Address          Ring Buffer(RX/TX)        Status
 ----------------------------------------------------------------------------------------------------
