@@ -13,8 +13,9 @@ import (
 // Logger handles all logging operations
 type Logger struct {
 	logger    *log.Logger
-	logWriter io.WriteCloser
+	logWriter io.Writer // 修改：从 io.WriteCloser 改为 io.Writer
 	verbose   bool
+	closers   []io.Closer // 新增：保存需要关闭的写入器列表
 }
 
 // New creates a new Logger
@@ -27,29 +28,42 @@ func New(logFile string, maxSize, maxBackups, maxAge int, verbose bool) *Logger 
 		}
 	}
 
+	var writers []io.Writer
+	var closers []io.Closer
+
 	// Configure log rotation
-	var writer io.Writer
-	if logFile == "stdout" {
-		writer = os.Stdout
-	} else {
-		writer = &lumberjack.Logger{
+	if logFile != "stdout" {
+		logRotator := &lumberjack.Logger{
 			Filename:   logFile,
-			MaxSize:    maxSize,    // megabytes
+			MaxSize:    maxSize, // megabytes
 			MaxBackups: maxBackups,
-			MaxAge:     maxAge,     // days
+			MaxAge:     maxAge, // days
 			Compress:   true,
 		}
+		writers = append(writers, logRotator)
+		closers = append(closers, logRotator)
 	}
 
-	// If verbose, log to stdout as well
-	if verbose && logFile != "stdout" {
-		writer = io.MultiWriter(writer, os.Stdout)
+	// Add stdout if verbose or if stdout is explicitly requested
+	if verbose || logFile == "stdout" {
+		writers = append(writers, os.Stdout)
+	}
+
+	// Create multi-writer if needed
+	var writer io.Writer
+	if len(writers) > 1 {
+		writer = io.MultiWriter(writers...)
+	} else if len(writers) == 1 {
+		writer = writers[0]
+	} else {
+		writer = os.Stdout // 默认为标准输出
 	}
 
 	return &Logger{
 		logger:    log.New(writer, "", log.LstdFlags),
-		logWriter: writer.(io.WriteCloser),
+		logWriter: writer,
 		verbose:   verbose,
+		closers:   closers,
 	}
 }
 
@@ -73,9 +87,9 @@ func (l *Logger) Debug(format string, v ...interface{}) {
 	}
 }
 
-// Close closes the log writer
+// Close closes all registered closers
 func (l *Logger) Close() {
-	if closer, ok := l.logWriter.(io.Closer); ok {
+	for _, closer := range l.closers {
 		closer.Close()
 	}
 }
