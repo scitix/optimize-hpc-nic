@@ -3,10 +3,22 @@ package nic
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"optimize-hpc-nic/internal/logger"
 	"optimize-hpc-nic/pkg/system"
+)
+
+const (
+	ARPHRD_ETHER      = 1  // Ethernet
+	ARPHRD_INFINIBAND = 32 // Infiniband
+)
+
+const (
+	NICTypeEthernet   = "Ethernet"
+	NICTypeInfiniband = "Infiniband"
+	NICTypeUnknown    = "Unknown"
 )
 
 // NIC represents a network interface
@@ -15,6 +27,7 @@ type NIC struct {
 	Speed      int
 	Driver     string
 	MAC        string
+	LinkType   string
 	RXCurrent  int
 	TXCurrent  int
 	RXMax      int
@@ -127,6 +140,13 @@ func (m *Manager) GetHighSpeedNICs() ([]*NIC, error) {
 				Name:       iface,
 				IsPhysical: true,
 			}
+			// Get link type
+			linkType, err := m.GetNICLinkType(iface)
+			if err == nil {
+				nic.LinkType = linkType
+			} else {
+				nic.LinkType = NICTypeUnknown
+			}
 
 			// Get speed
 			speed, err := m.GetNICSpeed(iface)
@@ -164,4 +184,26 @@ func (m *Manager) GetHighSpeedNICs() ([]*NIC, error) {
 	}
 
 	return nics, nil
+}
+
+// 添加获取网卡链路层类型的方法
+func (m *Manager) GetNICLinkType(name string) (string, error) {
+	// 方法1: 检查接口类型文件
+	typeFile := fmt.Sprintf("/sys/class/net/%s/type", name)
+	if _, err := os.Stat(typeFile); err == nil {
+		data, err := os.ReadFile(typeFile)
+		if err == nil {
+			typeVal, err := strconv.Atoi(strings.TrimSpace(string(data)))
+			if err == nil {
+				switch typeVal {
+				case ARPHRD_ETHER:
+					return NICTypeEthernet, nil
+				case ARPHRD_INFINIBAND:
+					return NICTypeInfiniband, nil
+				}
+			}
+		}
+	}
+
+	return NICTypeUnknown, fmt.Errorf("unable to determine link type for %s", name)
 }

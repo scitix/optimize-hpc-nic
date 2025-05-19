@@ -5,24 +5,25 @@ import (
 
 	"optimize-hpc-nic/internal/config"
 	"optimize-hpc-nic/internal/logger"
+	"optimize-hpc-nic/internal/nic"
 	"optimize-hpc-nic/internal/ringbuffer"
 )
 
 // Service is the monitoring service
 type Service struct {
-	cfg      *config.Config
-	log      *logger.Logger
+	cfg       *config.Config
+	log       *logger.Logger
 	optimizer *ringbuffer.Optimizer
-	stopChan chan struct{}
+	stopChan  chan struct{}
 }
 
 // New creates a new monitoring service
-func New(cfg *config.Config, log *logger.Logger) *Service {
+func New(nicMgr *nic.Manager, cfg *config.Config, log *logger.Logger) *Service {
 	return &Service{
-		cfg:      cfg,
-		log:      log,
-		optimizer: ringbuffer.NewOptimizer(cfg, log),
-		stopChan: make(chan struct{}),
+		cfg:       cfg,
+		log:       log,
+		optimizer: ringbuffer.New(nicMgr, log, cfg), // 正确的参数顺序：nicMgr, log, cfg
+		stopChan:  make(chan struct{}),
 	}
 }
 

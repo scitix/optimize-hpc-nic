@@ -3,7 +3,7 @@
 
 # Set variables
 PKG_NAME="optimize-hpc-nic"
-PKG_VERSION="1.0.0"
+PKG_VERSION="1.0.1"
 PKG_ARCH="amd64"
 BUILD_DIR="build"
 PKG_DIR="${BUILD_DIR}/${PKG_NAME}"

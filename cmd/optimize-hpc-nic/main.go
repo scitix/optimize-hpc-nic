@@ -30,7 +30,8 @@ func main() {
 	switch cfg.Mode {
 	case config.ModeMonitor:
 		log.Info("Starting monitoring mode with interval: %d seconds", cfg.MonitorInterval)
-		monitorService := monitor.New(cfg, log)
+		nicMgr := nic.NewManager(cfg.MinSpeed, log)
+		monitorService := monitor.New(nicMgr, cfg, log)
 		go func() {
 			<-sigs
 			log.Info("Received shutdown signal, stopping service")
@@ -40,7 +41,8 @@ func main() {
 
 	case config.ModeSet:
 		log.Info("Configuring ring buffers for high-speed NICs")
-		optimizer := ringbuffer.NewOptimizer(cfg, log)
+		nicMgr := nic.NewManager(cfg.MinSpeed, log)
+		optimizer := ringbuffer.New(nicMgr, log, cfg)
 		optimizer.OptimizeAll(true)
 
 	case config.ModeQuery:
@@ -51,6 +53,6 @@ func main() {
 			os.Exit(1)
 		}
 
-		ringbuffer.DisplayResults(nics, false)
+		ringbuffer.DisplayFormattedResults(nics)
 	}
 }
