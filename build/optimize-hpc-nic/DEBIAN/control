@@ -1,0 +1,11 @@
+Package: optimize-hpc-nic
+Version: 1.0.0
+Section: net
+Priority: optional
+Architecture: amd64
+Depends: ethtool
+Maintainer: System Administrator <admin@example.com>
+Description: High-Performance NIC Ring Buffer Optimization Tool
+ Automatically configures and monitors ring buffer settings for
+ high-speed network interfaces (≥200G) using parallel processing.
+ Features automatic optimization, monitoring, and comprehensive logging.

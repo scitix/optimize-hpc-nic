@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+# Create log directory with proper permissions if it doesn't exist
+if [ ! -d "/var/log/optimize-hpc-nic" ]; then
+  mkdir -p /var/log/optimize-hpc-nic
+  chmod 755 /var/log/optimize-hpc-nic
+fi
+
+# Enable and start the service
+if [ "$1" = "configure" ]; then
+    systemctl daemon-reload
+    systemctl enable optimize-hpc-nic.service
+    systemctl start optimize-hpc-nic.service || true
+fi

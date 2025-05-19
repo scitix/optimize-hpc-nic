@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+
+if [ "$1" = "remove" ]; then
+    systemctl stop optimize-hpc-nic.service || true
+    systemctl disable optimize-hpc-nic.service || true
+fi
