@@ -25,11 +25,6 @@ A high-performance tool for optimizing ring buffer settings on high-speed networ
 sudo dpkg -i optimize-hpc-nic_1.0.0_amd64.deb
 ```
 
-# Clone the repository
-
-git clone <https://github.com/weijielee-galaxy/optimize-hpc-nic/tree/main>
-cd optimize-hpc-nic
-
 # Build the binary
 
 ```bash
